@@ -46,22 +46,22 @@ struct exo_commands* parse_command(char* conf_buf) {
     while ((conf_buf[jdx] != ',')) {jdx++;}
     end = jdx-5;
     command->value_name = strndup(&conf_buf[5],end);
-    printf ("%s\n",command->value_name);
-    printf("jdx=%d\n",jdx);
+//    printf ("%s\n",command->value_name);
+//    printf("jdx=%d\n",jdx);
 
     /* parse command hex payload and length */
     start = jdx+1;
     jdx++;
     while ((conf_buf[jdx] != ',')) {jdx++;}
     end = jdx;
-    printf("jdx=%d\n",jdx);
+//    printf("jdx=%d\n",jdx);
     for (j=0,i=start ; i<end ; i+=2,j++) {
         tmp_p = (get_nibble(conf_buf[i])&0xF) << 4;
         tmp_payload[j] = tmp_p | (get_nibble(conf_buf[i+1])&0xF);
-        printf("0x%c%c %02x ",conf_buf[i], conf_buf[i+1], tmp_payload[j]);
-        printf("\n");
+//        printf("0x%c%c %02x ",conf_buf[i], conf_buf[i+1], tmp_payload[j]);
+//        printf("\n");
     }
-    printf("jdx=%d, start-end%d\n",jdx,end-start);
+//    printf("jdx=%d, start-end%d\n",jdx,end-start);
     pl_len = end-start/2;
     command->payload_length = pl_len;
     command->payload = malloc(pl_len);
@@ -82,11 +82,19 @@ struct exo_hosts_t* parse_host(char* conf_buf) {
     host->next_host = NULL;
 
     /* parse ipaddress starting at offset 4 */
-    
+    jdx=4;
+    while ((conf_buf[jdx] != ':')) {jdx++;}
+    end = jdx-5;
+    host->server = strndup(&conf_buf[5],end);
+//    printf ("%s\n",host->server);
+
+    /* parsing of port is missing */
+
+    return host;
 }
 
 /* Parse config file */
-void parse_config(struct exo_hosts_t** hosts_list, exo_commands** head_command) {
+void parse_config(struct exo_hosts_t** head_hosts, exo_commands** head_command) {
     FILE *file;
     int idx=0;
     int config_size;
@@ -102,38 +110,53 @@ void parse_config(struct exo_hosts_t** hosts_list, exo_commands** head_command) 
     /* Parse config */
     while ((idx < config_size) && config_buffer[idx]) {
         if (!memcmp(&config_buffer[idx], "comm", 4)) {
-            printf("comm found\n");
+//            printf("comm found\n");
             next_cmd = parse_command(&config_buffer[idx]);
             if (*head_command)
                 next_cmd->next_command = *head_command;
             *head_command = next_cmd;
         }
         if (!memcmp(&config_buffer[idx], "host", 4)) {
-            printf("host found\n");
+//            printf("host found\n");
+            next_host = parse_host(&config_buffer[idx]);
+            if (*head_hosts)
+                next_host->next_host = *head_hosts;
+            *head_hosts = next_host;
         }
 //        printf("%c", config_buffer[idx]);
         /* Sync idx pointer to start of next line */
         while ((config_buffer[idx] != '\n')) {idx++;}
         idx++;
     }
-    printf("%d\n", idx);
+//    printf("%d\n", idx);
 }
 
-void print_config(exo_commands** head_command) {
+void print_config_command(exo_commands** head_command) {
     struct exo_commands* command = NULL;
     command = *head_command;
-    printf("List:%x\n",head_command);
+
     while (command) {
         printf("%s: %d\n",command->value_name,command->payload_type);
         command = command->next_command;
     }
 }
 
+void print_config_hosts(exo_hosts_t** head_host) {
+    struct exo_hosts_t* host = NULL;
+    host = *head_host;
+
+    while (host) {
+        printf("%s\n",host->server);
+        host = host->next_host;
+    }
+}
+
 int main(int argc, char* argv[])
 {
-    struct exo_hosts_t* hosts_list = NULL;
+    struct exo_hosts_t* head_hosts = NULL;
     struct exo_commands* head_command = NULL;
-    parse_config(&hosts_list, &head_command);
-    print_config(&head_command);
-    printf("Hello\n");
+    parse_config(&head_hosts, &head_command);
+    print_config_hosts(&head_hosts);
+    print_config_command(&head_command);
+
 }
