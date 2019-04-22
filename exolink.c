@@ -9,15 +9,17 @@ typedef struct exo_hosts_t {
     struct exo_hosts_t* next_host;
 } exo_hosts_t;
 
-
 typedef struct exo_commands {
     char* value_name;
     int payload_length;
     unsigned char *payload;
+    int payload_type;
     int response_length;
     struct exo_commands* next_command;
 } exo_commands;
 
+#define EXOFLOAT 0
+#define EXOSHORT 1
 
 #define MAX_CONFIG_SIZE 16384
 char config_buffer[MAX_CONFIG_SIZE];
@@ -65,18 +67,31 @@ struct exo_commands* parse_command(char* conf_buf) {
     command->payload = malloc(pl_len);
     memcpy(command->payload, tmp_payload, pl_len);
 
-    /* response length */
-    
-
+    /* response type */
+    command->payload_type = conf_buf[end+1] - '0';
+//    jdx++;
+//    while ((conf_buf[jdx] != '\n')) {jdx++;}
+        
     return command;
 }
 
+struct exo_hosts_t* parse_host(char* conf_buf) {
+    int jdx, end, start, i,j;
+    struct exo_hosts_t* host;
+    host = malloc(sizeof (struct exo_hosts_t));
+    host->next_host = NULL;
+
+    /* parse ipaddress starting at offset 4 */
+    
+}
+
 /* Parse config file */
-void parse_config(struct exo_hosts_t* hosts_list, exo_commands** head_command) {
+void parse_config(struct exo_hosts_t** hosts_list, exo_commands** head_command) {
     FILE *file;
     int idx=0;
     int config_size;
     struct exo_commands* next_cmd = NULL;
+    struct exo_hosts_t* next_host = NULL;
 
     file = fopen("exolink.config", "r");
 
@@ -109,7 +124,7 @@ void print_config(exo_commands** head_command) {
     command = *head_command;
     printf("List:%x\n",head_command);
     while (command) {
-        printf("%s\n",command->value_name);
+        printf("%s: %d\n",command->value_name,command->payload_type);
         command = command->next_command;
     }
 }
@@ -118,7 +133,7 @@ int main(int argc, char* argv[])
 {
     struct exo_hosts_t* hosts_list = NULL;
     struct exo_commands* head_command = NULL;
-    parse_config(hosts_list, &head_command);
+    parse_config(&hosts_list, &head_command);
     print_config(&head_command);
     printf("Hello\n");
 }
