@@ -1,11 +1,18 @@
 
 #include <stdio.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 typedef struct exo_hosts_t {
     char* server;
     unsigned int port;
+    char* identifier;
+    int client_socket;
+    struct sockaddr_in server_addr;
     struct exo_hosts_t* next_host;
 } exo_hosts_t;
 
@@ -71,13 +78,14 @@ struct exo_commands* parse_command(char* conf_buf) {
     command->payload_type = conf_buf[end+1] - '0';
 //    jdx++;
 //    while ((conf_buf[jdx] != '\n')) {jdx++;}
-        
+
     return command;
 }
 
 struct exo_hosts_t* parse_host(char* conf_buf) {
     int jdx, end, start, i,j;
     struct exo_hosts_t* host;
+    
     host = malloc(sizeof (struct exo_hosts_t));
     host->next_host = NULL;
 
@@ -88,7 +96,18 @@ struct exo_hosts_t* parse_host(char* conf_buf) {
     host->server = strndup(&conf_buf[5],end);
 //    printf ("%s\n",host->server);
 
-    /* parsing of port is missing */
+    /* parsing of port */
+    jdx++;
+    host->port=atoi(&conf_buf[jdx]);
+//    printf ("%d\n",host->port);
+
+    /* Parse identifier */
+    while ((conf_buf[jdx] != ',')) {jdx++;}
+    start = jdx+1;
+    while ((conf_buf[jdx] != '\n')) {jdx++;}
+    end = jdx-start;
+    host->identifier = strndup(&conf_buf[start],end);
+//    printf ("%s\n", host->identifier);
 
     return host;
 }
@@ -146,17 +165,45 @@ void print_config_hosts(exo_hosts_t** head_host) {
     host = *head_host;
 
     while (host) {
-        printf("%s\n",host->server);
+        printf("%s:%d - %s\n",host->server, host->port, host->identifier);
         host = host->next_host;
     }
 }
 
-int main(int argc, char* argv[])
-{
+void init_hosts(exo_hosts_t** head_host) {
+    struct exo_hosts_t* host = NULL;
+    host = *head_host;
+
+    while (host) {
+        printf("Connecting to host %s:%d - %s\n",host->server, host->port, host->identifier);
+
+        host->client_socket = socket(PF_INET, SOCK_STREAM, 0);
+        host->server_addr.sin_family = AF_INET;
+        host->server_addr.sin_port = htons(host->port);
+        host->server_addr.sin_addr.s_addr = inet_addr(host->server);
+        memset(host->server_addr.sin_zero, '\0', sizeof host->server_addr.sin_zero);
+        connect(host->client_socket, (struct sockaddr *) &(host->server_addr), sizeof host->server_addr);
+
+        host = host->next_host;
+
+    }
+}
+
+
+void transmit_commands(struct exo_hosts_t** head_hosts, exo_commands** head_command) {
+    struct exo_hosts_t* host = NULL;
+    host = *head_hosts;
+}
+
+
+int main(int argc, char* argv[]) {
     struct exo_hosts_t* head_hosts = NULL;
     struct exo_commands* head_command = NULL;
     parse_config(&head_hosts, &head_command);
-    print_config_hosts(&head_hosts);
-    print_config_command(&head_command);
+ //   print_config_hosts(&head_hosts);
+ //   print_config_command(&head_command);
 
+    init_hosts(&head_hosts);
+
+    transmit_commands(&head_hosts, &head_command);
 }
