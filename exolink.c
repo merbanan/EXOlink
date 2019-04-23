@@ -103,7 +103,7 @@ struct exo_hosts_t* parse_host(char* conf_buf) {
 
     /* Parse identifier */
     while ((conf_buf[jdx] != ',')) {jdx++;}
-    start = jdx+1;
+    start = jdx+2;
     while ((conf_buf[jdx] != '\n')) {jdx++;}
     end = jdx-start;
     host->identifier = strndup(&conf_buf[start],end);
@@ -190,9 +190,23 @@ void init_hosts(exo_hosts_t** head_host) {
 }
 
 
-void transmit_commands(struct exo_hosts_t** head_hosts, exo_commands** head_command) {
+void transmit_commands(struct exo_hosts_t** head_hosts, exo_commands** head_command, int repeat) {
     struct exo_hosts_t* host = NULL;
+    struct exo_commands* command = NULL;
+    unsigned char tmp_payload[100] = {0};
+    command = *head_command;
+loop:
     host = *head_hosts;
+    while (host) {
+        while (command) {
+            printf("%s: %d\n",command->value_name,command->payload_type);
+            command = command->next_command;
+        }
+        command = *head_command;
+        host = host->next_host;
+    }
+    repeat--;
+    if (repeat) goto loop;
 }
 
 
@@ -205,5 +219,5 @@ int main(int argc, char* argv[]) {
 
     init_hosts(&head_hosts);
 
-    transmit_commands(&head_hosts, &head_command);
+    transmit_commands(&head_hosts, &head_command, 2);
 }
