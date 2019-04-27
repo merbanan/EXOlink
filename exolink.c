@@ -29,6 +29,7 @@ typedef struct exo_commands {
 #define EXOSHORT 1
 
 #define MAX_CONFIG_SIZE 16384
+#define ANS_BUFFER_SIZE 1024
 char config_buffer[MAX_CONFIG_SIZE];
 
 unsigned char get_nibble(unsigned char nibble) {
@@ -39,6 +40,40 @@ unsigned char get_nibble(unsigned char nibble) {
        ret = nibble - 'a' + 10;
    return ret;
 }
+
+unsigned char* gen_packet(unsigned char* pl_buf, int pl_buf_len, int* payload_length) {
+    int i;
+    unsigned char x = 0;
+    unsigned char* pl;
+    int end_pos = 0;
+    /* calculate xor sum over complete payload */
+    for (i=0 ; i<pl_buf_len ; i++)
+        x^=pl_buf[i];
+
+    printf("%02x\n",x);
+    /* Check if escape is needed */
+    if (x==0x1b) {
+        *payload_length = pl_buf_len+4;
+        pl = malloc(pl_buf_len+4);
+        memcpy(&pl[1], pl_buf, pl_buf_len);
+        pl_buf_len++;
+        pl[pl_buf_len] = x;
+        printf("%02x %02x\n",x, pl[pl_buf_len]);
+        pl[pl_buf_len+1] = 0xe4;
+    } else {
+        *payload_length = pl_buf_len+3;
+        pl = malloc(pl_buf_len+3);
+        memcpy(&pl[1], pl_buf, pl_buf_len);
+        pl[pl_buf_len+1] = x;
+    }
+
+    /* add start/stop marker */
+    pl[0] = 0x3c;
+    pl[pl_buf_len+2] = 0x3e;
+
+    return pl;
+}
+
 
 struct exo_commands* parse_command(char* conf_buf) {
     int jdx, end, start, i,j, pl_len;
@@ -61,7 +96,7 @@ struct exo_commands* parse_command(char* conf_buf) {
     jdx++;
     while ((conf_buf[jdx] != ',')) {jdx++;}
     end = jdx;
-//    printf("jdx=%d\n",jdx);
+    printf("jdx=%d\n",jdx);
     for (j=0,i=start ; i<end ; i+=2,j++) {
         tmp_p = (get_nibble(conf_buf[i])&0xF) << 4;
         tmp_payload[j] = tmp_p | (get_nibble(conf_buf[i+1])&0xF);
@@ -69,10 +104,11 @@ struct exo_commands* parse_command(char* conf_buf) {
 //        printf("\n");
     }
 //    printf("jdx=%d, start-end%d\n",jdx,end-start);
-    pl_len = end-start/2;
-    command->payload_length = pl_len;
-    command->payload = malloc(pl_len);
-    memcpy(command->payload, tmp_payload, pl_len);
+    pl_len = (end-start)/2;
+//    command->payload_length = pl_len + 3;
+    command->payload = gen_packet(tmp_payload, pl_len, &command->payload_length);
+//    command->payload = malloc(pl_len);
+//    memcpy(command->payload, tmp_payload, pl_len);
 
     /* response type */
     command->payload_type = conf_buf[end+1] - '0';
@@ -151,11 +187,16 @@ void parse_config(struct exo_hosts_t** head_hosts, exo_commands** head_command) 
 }
 
 void print_config_command(exo_commands** head_command) {
+    int i;
     struct exo_commands* command = NULL;
     command = *head_command;
 
     while (command) {
         printf("%s: %d\n",command->value_name,command->payload_type);
+        for (i=0 ; i<command->payload_length ; i++) {
+            printf(" %02x", command->payload[i]);
+        }
+        printf("\n");
         command = command->next_command;
     }
 }
@@ -191,16 +232,33 @@ void init_hosts(exo_hosts_t** head_host) {
 
 
 void transmit_commands(struct exo_hosts_t** head_hosts, exo_commands** head_command, int repeat) {
+    int rb, j;
     struct exo_hosts_t* host = NULL;
     struct exo_commands* command = NULL;
     unsigned char tmp_payload[100] = {0};
+    unsigned char ans_buffer[ANS_BUFFER_SIZE];
     command = *head_command;
 loop:
     host = *head_hosts;
     while (host) {
         while (command) {
-            printf("%s: %d\n",command->value_name,command->payload_type);
+            printf("%s: %d|%d\n",command->value_name, command->payload_type, command->payload_length);
+            for (j=0 ; j<command->payload_length ; j++)
+                printf("%02x ", command->payload[j]);
+            printf("\n");
+
+
+            rb = send(host->client_socket, command->payload, command->payload_length, 0);
+            rb = recv(host->client_socket, ans_buffer, ANS_BUFFER_SIZE, 0);
+
+            printf("Data received:");
+            for (j=0 ; j<rb ; j++)
+                printf("%02x ",ans_buffer[j]);
+            printf("\n");
+
             command = command->next_command;
+            usleep(500000);
+            //memset(ans_buffer, 0, ANS_BUFFER_SIZE);
         }
         command = *head_command;
         host = host->next_host;
@@ -215,7 +273,7 @@ int main(int argc, char* argv[]) {
     struct exo_commands* head_command = NULL;
     parse_config(&head_hosts, &head_command);
  //   print_config_hosts(&head_hosts);
- //   print_config_command(&head_command);
+    print_config_command(&head_command);
 
     init_hosts(&head_hosts);
 
