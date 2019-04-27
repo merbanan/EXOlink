@@ -28,6 +28,8 @@ typedef struct exo_commands {
 #define EXOFLOAT 0
 #define EXOSHORT 1
 
+char* unit_status[] = { "Stopped", "Starting", "Starting", "Starting", "Starting", "Running", NULL , NULL, NULL, NULL, NULL, "Stopping", "Fire alarm", NULL, NULL};
+
 #define MAX_CONFIG_SIZE 16384
 #define ANS_BUFFER_SIZE 1024
 char config_buffer[MAX_CONFIG_SIZE];
@@ -42,12 +44,16 @@ unsigned char get_nibble(unsigned char nibble) {
 }
 
 unsigned char* gen_packet(unsigned char* pl_buf, int pl_buf_len, int* payload_length) {
-    int i;
+    int i, xorlen;
     unsigned char x = 0;
     unsigned char* pl;
     int end_pos = 0;
-    /* calculate xor sum over complete payload */
-    for (i=0 ; i<pl_buf_len ; i++)
+
+    xorlen = pl_buf_len;
+    if (pl_buf[xorlen-1] == 0xe4) xorlen--;
+
+    /* calculate xor sum over payload */
+    for (i=0 ; i<xorlen ; i++)
         x^=pl_buf[i];
 
 //    printf("%02x\n",x);
@@ -245,12 +251,14 @@ void parse_response(struct exo_hosts_t* host, exo_commands* cmd, unsigned char* 
     for (i=1 ; i<ans_buf_len-2 ; i++)
         x^=ans_buf[i];
 
-    /* validate xor sum */
+    /* validate xor sum, some payloads look valid but fails xorsum check
+     * these payloads often have a 0x1b byte extra, here we just ignore
+     * them because we can ask again for a payload that passes the check
+     */
     xorpos = ans_buf_len-2;
     if (ans_buf[xorpos] != x) goto end;
 
-    /* parse payload */
-    /* look for escape */
+    /* parse payload, look for escape */
     pl_off = 3;
     if (ans_buf_len>3) {
         if(ans_buf[3] == 0x1b)
@@ -267,6 +275,9 @@ void parse_response(struct exo_hosts_t* host, exo_commands* cmd, unsigned char* 
             printf("%s: %f\n",cmd->value_name, val);
             break;
         case EXOSHORT:
+            pl_off = ans_buf_len-3;
+            printf("%s: %d, %s\n",cmd->value_name, ans_buf[pl_off], unit_status[ans_buf[pl_off]]);
+            break;
         default:
             break;
     }
@@ -286,25 +297,28 @@ loop:
     host = *head_hosts;
     while (host) {
         while (command) {
-//            printf("%s: %d|%d\n",command->value_name, command->payload_type, command->payload_length);
-//            for (j=0 ; j<command->payload_length ; j++)
-//                printf("%02x ", command->payload[j]);
-//            printf("\n");
+            printf("%s: %d\n",command->value_name, command->payload_length);
+            for (j=0 ; j<command->payload_length ; j++)
+                printf("%02x ", command->payload[j]);
+            printf("\n");
 
 
             sb = send(host->client_socket, command->payload, command->payload_length, 0);
             rb = recv(host->client_socket, ans_buffer, ANS_BUFFER_SIZE, 0);
 
-//            printf("Data received:");
-//            for (j=0 ; j<rb ; j++)
-//                printf("%02x ",ans_buffer[j]);
-//            printf("\n::\n");
+            printf("Data received:");
+            for (j=0 ; j<rb ; j++)
+                printf("%02x ",ans_buffer[j]);
+            printf("\n");
             parse_response(host, command, ans_buffer, rb);
+            printf("\n");
+
 
             command = command->next_command;
             usleep(500000);
             //memset(ans_buffer, 0, ANS_BUFFER_SIZE);
         }
+        printf("\n");
         command = *head_command;
         host = host->next_host;
     }
@@ -322,5 +336,5 @@ int main(int argc, char* argv[]) {
 
     init_hosts(&head_hosts);
 
-    transmit_commands(&head_hosts, &head_command, 2);
+    transmit_commands(&head_hosts, &head_command, 10);
 }
