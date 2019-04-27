@@ -50,7 +50,7 @@ unsigned char* gen_packet(unsigned char* pl_buf, int pl_buf_len, int* payload_le
     for (i=0 ; i<pl_buf_len ; i++)
         x^=pl_buf[i];
 
-    printf("%02x\n",x);
+//    printf("%02x\n",x);
     /* Check if escape is needed */
     if (x==0x1b) {
         *payload_length = pl_buf_len+4;
@@ -58,7 +58,7 @@ unsigned char* gen_packet(unsigned char* pl_buf, int pl_buf_len, int* payload_le
         memcpy(&pl[1], pl_buf, pl_buf_len);
         pl_buf_len++;
         pl[pl_buf_len] = x;
-        printf("%02x %02x\n",x, pl[pl_buf_len]);
+//        printf("%02x %02x\n",x, pl[pl_buf_len]);
         pl[pl_buf_len+1] = 0xe4;
     } else {
         *payload_length = pl_buf_len+3;
@@ -96,7 +96,7 @@ struct exo_commands* parse_command(char* conf_buf) {
     jdx++;
     while ((conf_buf[jdx] != ',')) {jdx++;}
     end = jdx;
-    printf("jdx=%d\n",jdx);
+//    printf("jdx=%d\n",jdx);
     for (j=0,i=start ; i<end ; i+=2,j++) {
         tmp_p = (get_nibble(conf_buf[i])&0xF) << 4;
         tmp_payload[j] = tmp_p | (get_nibble(conf_buf[i+1])&0xF);
@@ -230,9 +230,53 @@ void init_hosts(exo_hosts_t** head_host) {
     }
 }
 
+void parse_response(struct exo_hosts_t* host, exo_commands* cmd, unsigned char* ans_buf, int ans_buf_len) {
+    int i, xorpos;
+    unsigned char x = 0;
+    float val;
+    unsigned int raw;
+    int pl_off;
+
+    /* Validate payload, start and end */
+    if (ans_buf[0] != 0x3d) goto end;
+    if (ans_buf[ans_buf_len-1] != 0x3e) goto end;
+
+    /* calculate xor sum over complete payload */
+    for (i=1 ; i<ans_buf_len-2 ; i++)
+        x^=ans_buf[i];
+
+    /* validate xor sum */
+    xorpos = ans_buf_len-2;
+    if (ans_buf[xorpos] != x) goto end;
+
+    /* parse payload */
+    /* look for escape */
+    pl_off = 3;
+    if (ans_buf_len>3) {
+        if(ans_buf[3] == 0x1b)
+            pl_off = 4;
+    } else {
+        /* payload does not contain anything */
+        goto end;
+    }
+
+    switch (cmd->payload_type) {
+        case EXOFLOAT:
+            raw = ((ans_buf[pl_off+3] <<24) | (ans_buf[pl_off+2] << 16) | (ans_buf[pl_off+1] << 8) | ans_buf[pl_off]);
+            memcpy(&val, &raw, 4);
+            printf("%s: %f\n",cmd->value_name, val);
+            break;
+        case EXOSHORT:
+        default:
+            break;
+    }
+
+end:
+    return;
+}
 
 void transmit_commands(struct exo_hosts_t** head_hosts, exo_commands** head_command, int repeat) {
-    int rb, j;
+    int rb, sb, j;
     struct exo_hosts_t* host = NULL;
     struct exo_commands* command = NULL;
     unsigned char tmp_payload[100] = {0};
@@ -242,19 +286,20 @@ loop:
     host = *head_hosts;
     while (host) {
         while (command) {
-            printf("%s: %d|%d\n",command->value_name, command->payload_type, command->payload_length);
-            for (j=0 ; j<command->payload_length ; j++)
-                printf("%02x ", command->payload[j]);
-            printf("\n");
+//            printf("%s: %d|%d\n",command->value_name, command->payload_type, command->payload_length);
+//            for (j=0 ; j<command->payload_length ; j++)
+//                printf("%02x ", command->payload[j]);
+//            printf("\n");
 
 
-            rb = send(host->client_socket, command->payload, command->payload_length, 0);
+            sb = send(host->client_socket, command->payload, command->payload_length, 0);
             rb = recv(host->client_socket, ans_buffer, ANS_BUFFER_SIZE, 0);
 
-            printf("Data received:");
-            for (j=0 ; j<rb ; j++)
-                printf("%02x ",ans_buffer[j]);
-            printf("\n");
+//            printf("Data received:");
+//            for (j=0 ; j<rb ; j++)
+//                printf("%02x ",ans_buffer[j]);
+//            printf("\n::\n");
+            parse_response(host, command, ans_buffer, rb);
 
             command = command->next_command;
             usleep(500000);
@@ -272,8 +317,8 @@ int main(int argc, char* argv[]) {
     struct exo_hosts_t* head_hosts = NULL;
     struct exo_commands* head_command = NULL;
     parse_config(&head_hosts, &head_command);
- //   print_config_hosts(&head_hosts);
-    print_config_command(&head_command);
+//    print_config_hosts(&head_hosts);
+//    print_config_command(&head_command);
 
     init_hosts(&head_hosts);
 
