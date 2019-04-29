@@ -6,12 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 typedef struct exo_hosts_t {
     char* server;
     unsigned int port;
     char* identifier;
     int client_socket;
+    int active;
     struct sockaddr_in server_addr;
     struct exo_hosts_t* next_host;
 } exo_hosts_t;
@@ -218,6 +220,7 @@ void print_config_hosts(exo_hosts_t** head_host) {
 }
 
 void init_hosts(exo_hosts_t** head_host) {
+    int res;
     struct exo_hosts_t* host = NULL;
     host = *head_host;
 
@@ -229,7 +232,10 @@ void init_hosts(exo_hosts_t** head_host) {
         host->server_addr.sin_port = htons(host->port);
         host->server_addr.sin_addr.s_addr = inet_addr(host->server);
         memset(host->server_addr.sin_zero, '\0', sizeof host->server_addr.sin_zero);
-        connect(host->client_socket, (struct sockaddr *) &(host->server_addr), sizeof host->server_addr);
+        res = connect(host->client_socket, (struct sockaddr *) &(host->server_addr), sizeof host->server_addr);
+
+        if (!res)
+            host->active = 1;
 
         host = host->next_host;
 
@@ -267,16 +273,16 @@ void parse_response(struct exo_hosts_t* host, exo_commands* cmd, unsigned char* 
         /* payload does not contain anything */
         goto end;
     }
-
+//    printf("%s ",host->identifier);
     switch (cmd->payload_type) {
         case EXOFLOAT:
             raw = ((ans_buf[pl_off+3] <<24) | (ans_buf[pl_off+2] << 16) | (ans_buf[pl_off+1] << 8) | ans_buf[pl_off]);
             memcpy(&val, &raw, 4);
-            printf("%s: %f\n",cmd->value_name, val);
+            printf(" \"%s\" : \"%f\"\n",cmd->value_name, val);
             break;
         case EXOSHORT:
             pl_off = ans_buf_len-3;
-            printf("%s: %d, %s\n",cmd->value_name, ans_buf[pl_off], unit_status[ans_buf[pl_off]]);
+            printf(" \"%s\" : \"%s,%d\"\n",cmd->value_name, unit_status[ans_buf[pl_off]], ans_buf[pl_off]);
             break;
         default:
             break;
@@ -288,6 +294,9 @@ end:
 
 void transmit_commands(struct exo_hosts_t** head_hosts, exo_commands** head_command, int repeat) {
     int rb, sb, j;
+    struct tm tm_info;
+    time_t etime;
+    char formatted_time[40];
     struct exo_hosts_t* host = NULL;
     struct exo_commands* command = NULL;
     unsigned char tmp_payload[100] = {0};
@@ -295,30 +304,39 @@ void transmit_commands(struct exo_hosts_t** head_hosts, exo_commands** head_comm
     command = *head_command;
 loop:
     host = *head_hosts;
-    while (host) {
+    while (host && host->active) {
         while (command) {
-            printf("%s: %d\n",command->value_name, command->payload_length);
-            for (j=0 ; j<command->payload_length ; j++)
-                printf("%02x ", command->payload[j]);
-            printf("\n");
+//             printf("%s: %d\n",command->value_name, command->payload_length);
+//             for (j=0 ; j<command->payload_length ; j++)
+//                 printf("%02x ", command->payload[j]);
+//             printf("\n");
 
 
             sb = send(host->client_socket, command->payload, command->payload_length, 0);
             rb = recv(host->client_socket, ans_buffer, ANS_BUFFER_SIZE, 0);
 
-            printf("Data received:");
-            for (j=0 ; j<rb ; j++)
-                printf("%02x ",ans_buffer[j]);
-            printf("\n");
+            /* Build json message */
+
+            time(&etime);
+            localtime_r(&etime, &tm_info);
+            strftime(formatted_time, 40, "%Y-%m-%d %H:%M:%S", &tm_info);
+
+            printf("{\"time\" : \"%s\",\n", formatted_time);
+            printf(" \"brand\" : \"Regin\",\n");
+            printf(" \"model\" : \"Corrigo\",\n");
+            printf(" \"id\" : \"%s\",\n", host->identifier);
+//             for (j=0 ; j<rb ; j++)
+//                 printf("%02x ",ans_buffer[j]);
+//             printf("\n");
             parse_response(host, command, ans_buffer, rb);
-            printf("\n");
+            printf("}\n");
 
 
             command = command->next_command;
             usleep(500000);
             //memset(ans_buffer, 0, ANS_BUFFER_SIZE);
         }
-        printf("\n");
+//        printf("\n");
         command = *head_command;
         host = host->next_host;
     }
