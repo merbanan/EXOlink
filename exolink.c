@@ -225,7 +225,7 @@ void init_hosts(exo_hosts_t** head_host) {
     host = *head_host;
 
     while (host) {
-        printf("Connecting to host %s:%d - %s\n",host->server, host->port, host->identifier);
+//        printf("Connecting to host %s:%d - %s\n",host->server, host->port, host->identifier);
 
         host->client_socket = socket(PF_INET, SOCK_STREAM, 0);
         host->server_addr.sin_family = AF_INET;
@@ -278,11 +278,13 @@ void parse_response(struct exo_hosts_t* host, exo_commands* cmd, unsigned char* 
         case EXOFLOAT:
             raw = ((ans_buf[pl_off+3] <<24) | (ans_buf[pl_off+2] << 16) | (ans_buf[pl_off+1] << 8) | ans_buf[pl_off]);
             memcpy(&val, &raw, 4);
-            printf(" \"%s\" : \"%f\"\n",cmd->value_name, val);
+            printf(", \"Temperature Type\" : \"%s\" ",cmd->value_name);
+            printf(", \"temperature_c\" : \"%f\" ", val);
             break;
         case EXOSHORT:
             pl_off = ans_buf_len-3;
-            printf(" \"%s\" : \"%s,%d\"\n",cmd->value_name, unit_status[ans_buf[pl_off]], ans_buf[pl_off]);
+            printf(", \"%s\" : \"%s\" ",cmd->value_name, unit_status[ans_buf[pl_off]]);
+            printf(", \"%s_value\" : %d ",cmd->value_name, ans_buf[pl_off]);
             break;
         default:
             break;
@@ -321,16 +323,18 @@ loop:
             localtime_r(&etime, &tm_info);
             strftime(formatted_time, 40, "%Y-%m-%d %H:%M:%S", &tm_info);
 
-            printf("{\"time\" : \"%s\",\n", formatted_time);
-            printf(" \"brand\" : \"Regin\",\n");
-            printf(" \"model\" : \"Corrigo\",\n");
-            printf(" \"id\" : \"%s\",\n", host->identifier);
+            printf("{\"time\" : \"%s\", ", formatted_time);
+            printf(" \"brand\" : \"Regin\", ");
+            printf(" \"model\" : \"Corrigo\", ");
+            printf(" \"id\" : \"%s\"", host->identifier);
 //             for (j=0 ; j<rb ; j++)
 //                 printf("%02x ",ans_buffer[j]);
 //             printf("\n");
             parse_response(host, command, ans_buffer, rb);
             printf("}\n");
 
+            /* Flush to make sure the transmission gets out */
+            fflush(stdout);
 
             command = command->next_command;
             usleep(500000);
