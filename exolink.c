@@ -306,39 +306,41 @@ void transmit_commands(struct exo_hosts_t** head_hosts, exo_commands** head_comm
     command = *head_command;
 loop:
     host = *head_hosts;
-    while (host && host->active) {
-        while (command) {
-//             printf("%s: %d\n",command->value_name, command->payload_length);
-//             for (j=0 ; j<command->payload_length ; j++)
-//                 printf("%02x ", command->payload[j]);
-//             printf("\n");
+    while (host) {
+        if (host->active) {
+            while (command) {
+        //             printf("%s: %d\n",command->value_name, command->payload_length);
+        //             for (j=0 ; j<command->payload_length ; j++)
+        //                 printf("%02x ", command->payload[j]);
+        //             printf("\n");
 
 
-            sb = send(host->client_socket, command->payload, command->payload_length, 0);
-            rb = recv(host->client_socket, ans_buffer, ANS_BUFFER_SIZE, 0);
+                sb = send(host->client_socket, command->payload, command->payload_length, 0);
+                rb = recv(host->client_socket, ans_buffer, ANS_BUFFER_SIZE, 0);
 
-            /* Build json message */
+                /* Build json message */
 
-            time(&etime);
-            localtime_r(&etime, &tm_info);
-            strftime(formatted_time, 40, "%Y-%m-%d %H:%M:%S", &tm_info);
+                time(&etime);
+                localtime_r(&etime, &tm_info);
+                strftime(formatted_time, 40, "%Y-%m-%d %H:%M:%S", &tm_info);
 
-            printf("{\"time\" : \"%s\", ", formatted_time);
-            printf(" \"brand\" : \"Regin\", ");
-            printf(" \"model\" : \"Corrigo\", ");
-            printf(" \"id\" : \"%s\"", host->identifier);
-//             for (j=0 ; j<rb ; j++)
-//                 printf("%02x ",ans_buffer[j]);
-//             printf("\n");
-            parse_response(host, command, ans_buffer, rb);
-            printf("}\n");
+                printf("{\"time\" : \"%s\", ", formatted_time);
+                printf(" \"brand\" : \"Regin\", ");
+                printf(" \"model\" : \"Corrigo\", ");
+                printf(" \"id\" : \"%s\"", host->identifier);
+        //             for (j=0 ; j<rb ; j++)
+        //                 printf("%02x ",ans_buffer[j]);
+        //             printf("\n");
+                parse_response(host, command, ans_buffer, rb);
+                printf("}\n");
 
-            /* Flush to make sure the transmission gets out */
-            fflush(stdout);
+                /* Flush to make sure the transmission gets out */
+                fflush(stdout);
 
-            command = command->next_command;
-            usleep(500000);
-            //memset(ans_buffer, 0, ANS_BUFFER_SIZE);
+                command = command->next_command;
+                usleep(500000);
+                //memset(ans_buffer, 0, ANS_BUFFER_SIZE);
+            }
         }
 //        printf("\n");
         command = *head_command;
@@ -353,10 +355,10 @@ int main(int argc, char* argv[]) {
     struct exo_hosts_t* head_hosts = NULL;
     struct exo_commands* head_command = NULL;
     parse_config(&head_hosts, &head_command);
-//    print_config_hosts(&head_hosts);
 //    print_config_command(&head_command);
 
     init_hosts(&head_hosts);
+//    print_config_hosts(&head_hosts);
 
     transmit_commands(&head_hosts, &head_command, 10);
 }
