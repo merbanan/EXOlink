@@ -278,8 +278,11 @@ void parse_response(struct exo_hosts_t* host, exo_commands* cmd, unsigned char* 
         case EXOFLOAT:
             raw = ((ans_buf[pl_off+3] <<24) | (ans_buf[pl_off+2] << 16) | (ans_buf[pl_off+1] << 8) | ans_buf[pl_off]);
             memcpy(&val, &raw, 4);
-            printf(", \"Temperature Type\" : \"%s\" ",cmd->value_name);
-            printf(", \"temperature_c\" : \"%f\" ", val);
+            /* filter out bogus values */
+            if ((val > -50.0 ) && (val < 200.0)) {
+                printf(", \"Temperature Type\" : \"%s\" ",cmd->value_name);
+                printf(", \"temperature_c\" : \"%f\" ", val);
+            }
             break;
         case EXOSHORT:
             pl_off = ans_buf_len-3;
