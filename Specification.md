@@ -14,29 +14,30 @@ are present in EXOLine-TCP.
 
 
 
-Payload structure
+Message structure
 -----------------
 
-The payload is byte-based and formed like the following:
+The messages are byte-based and formed like the following:
 
 | Position      | Value         | Meaning|
 | ------------- |:-------------:| -----:|
-| 0             | 0x3c/0x3d     | Payload start value (Client/Server) |
-| X             | ...           | Payload data (depends on command) |
+| 0             | 0x3c/0x3d     | Message start value (Client/Server) |
+| X             | ...           | Payload (depends on command) |
 | Last-1        | XORSUM        | Xorsum of all bytes after start value until XORSUM byte |
-| Last          | 0x3e          | Payload stop value |
+| Last          | 0x3e          | Message stop value |
 
 ### Escape-value
 
-If any start, stop or escape value is present in the payload data an escape value (**0x1B**) is
-inserted and the actual value is bit-wise inverted and placed after the escape value.
+If any start, stop or escape value is present in the Payload or XORSUM it is
+replaced by an escape value (**0x1B**) and the bit-wise inverse of the actual value.
+This is done by both clients and serves.
 
 As example here is a server response for a temperature reading.
 
 [ 3d 05 00 14 c3 ae 41 *1b* c2 3e ] (escape value in cursive)
 
-The payload is [ 05 00 14 c3 ae 41 ] and its xorsum equals to 0x3D (server start value).
-Thus an escape value is inserted and the inverse value c2 is placed instead.
+The payload is [ 05 00 14 c3 ae 41 ] and its xorsum is 0x3D (server start value).
+Thus an escape value and the inverse value (0xC2) is inserted instead.
 
 Encryption
 ----------
