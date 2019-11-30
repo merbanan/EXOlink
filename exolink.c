@@ -243,46 +243,57 @@ void init_hosts(exo_hosts_t** head_host) {
 }
 
 void parse_response(struct exo_hosts_t* host, exo_commands* cmd, unsigned char* ans_buf, int ans_buf_len) {
-    int i, xorpos;
+    int i, xorpos, shift;
     unsigned char x = 0;
     float val;
     unsigned int raw;
     int pl_off;
 
     /* Validate payload, start and end */
-    if (ans_buf[0] != 0x3d) goto end;
-    if (ans_buf[ans_buf_len-1] != 0x3e) goto end;
+    if (ans_buf[0] != 0x3d) goto start_e;
+    if (ans_buf[ans_buf_len-1] != 0x3e) goto end_e;
+
+    /* Parse escape values (in place) if 0x1b is detected
+     * invert next value
+     */
+    i=1;
+    shift = 0;
+    while (i<ans_buf_len-2) {
+        if (shift)
+            ans_buf[i] = ans_buf[i+shift];
+        if (ans_buf[i] == 0x1b) {
+            shift++;
+            ans_buf[i] = ~ans_buf[i+shift];
+        }
+        i++;
+    }
+    /* reduce the payload length with the amount of escape values found */
+    ans_buf_len -=shift;
 
     /* calculate xor sum over complete payload */
     for (i=1 ; i<ans_buf_len-2 ; i++)
         x^=ans_buf[i];
 
-    /* validate xor sum, some payloads look valid but fails xorsum check
-     * these payloads often have a 0x1b byte extra, here we just ignore
-     * them because we can ask again for a payload that passes the check
-     */
+    /* validate xor sum  */
     xorpos = ans_buf_len-2;
-    if (ans_buf[xorpos] != x) goto end;
+    if (ans_buf[xorpos] != x) goto xor_end;
 
     /* parse payload, look for escape */
     pl_off = 3;
-    if (ans_buf_len>3) {
-        if(ans_buf[3] == 0x1b)
-            pl_off = 4;
-    } else {
-        /* payload does not contain anything */
-        goto end;
-    }
+
 //    printf("%s ",host->identifier);
     switch (cmd->payload_type) {
         case EXOFLOAT:
             raw = ((ans_buf[pl_off+3] <<24) | (ans_buf[pl_off+2] << 16) | (ans_buf[pl_off+1] << 8) | ans_buf[pl_off]);
-            memcpy(&val, &raw, 4);
+            val = *((float*)&raw);
             /* filter out bogus values */
-            if ((val > -50.0 ) && (val < 200.0)) {
+            if ((val > -100.0 ) && (val < 500.0)) {
                 printf(", \"Temperature Type\" : \"%s\" ",cmd->value_name);
                 printf(", \"temperature_c\" : \"%f\" ", val);
+            } else {
+                 printf("val error = %f, %s, 0x%x\n", val, cmd->value_name, raw);
             }
+
             break;
         case EXOSHORT:
             pl_off = ans_buf_len-3;
@@ -294,6 +305,13 @@ void parse_response(struct exo_hosts_t* host, exo_commands* cmd, unsigned char* 
     }
 
 end:
+    return;
+start_e:
+end_e:
+    printf("start/end error\n");
+    return;
+xor_end:
+    printf("xorsum error\n");
     return;
 }
 
@@ -331,12 +349,12 @@ loop:
                 printf(" \"brand\" : \"Regin\", ");
                 printf(" \"model\" : \"Corrigo\", ");
                 printf(" \"id\" : \"%s\"", host->identifier);
-        //             for (j=0 ; j<rb ; j++)
-        //                 printf("%02x ",ans_buffer[j]);
-        //             printf("\n");
                 parse_response(host, command, ans_buffer, rb);
                 printf("}\n");
-
+//                 for (j=0 ; j<rb ; j++)
+//                     printf("%02x ",ans_buffer[j]);
+//                 printf("\n");
+ 
                 /* Flush to make sure the transmission gets out */
                 fflush(stdout);
 
