@@ -26,6 +26,24 @@ The messages are byte-based and formed like the following:
 | Last-1        | XORSUM        | Xorsum of all bytes after start value until XORSUM byte |
 | Last          | 0x3e          | Message stop value |
 
+
+Payload structure
+-----------------
+
+The payload consists of the following:
+
+| Position      | Value         | Meaning|
+| ------------- |:-------------:| -----:|
+| 0             | 0xFF          | PLA |
+| 1             | 0x1E          | ELA |
+| 2             | 0xC8          | ?? Multi Command |
+| 3             | 0x04          | ?? Multi Command parameter |
+| 4             | 0xB6          | CMD, RRP in this case |
+| 5             | 0x04          | argument ln in this case |
+| 6             | 0x08          | argument cell/60 in this case |
+| 7             | 0x00          | argument cell%60 in this case |
+
+
 ### Escape-value
 
 If any start, stop or escape value is present in the Payload or XORSUM it is
