@@ -36,8 +36,8 @@ The payload consists of the following:
 | ------------- |:-------------:| -----:|
 | 0             | 0xFF          | PLA |
 | 1             | 0x1E          | ELA |
-| 2             | 0xC8          | ?? Multi Command |
-| 3             | 0x04          | ?? Multi Command parameter |
+| 2             | 0xC8          | Multi Command marker |
+| 3             | 0x04          | Length of bytes in this command block |
 | 4             | 0xB6          | CMD, RRP in this case |
 | 5             | 0x04          | argument ln in this case |
 | 6             | 0x08          | argument cell/60 in this case |
