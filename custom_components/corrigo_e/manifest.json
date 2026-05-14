@@ -3,7 +3,7 @@
   "name": "Regin Corrigo E",
   "version": "1.0.0",
   "config_flow": true,
-  "documentation": "https://github.com/benjamin-larsson/EXOlink",
+  "documentation": "https://github.com/merbanan/EXOlink",
   "requirements": [],
   "codeowners": [],
   "iot_class": "local_polling"
