@@ -94,6 +94,7 @@ def compute_entity_names(variables: list[VarRecord]) -> dict[str, str]:
         if name_count[v.name] == 1:
             result[v.ref] = v.name
         else:
-            subsection = v.group.rsplit(">", 1)[-1].strip()
-            result[v.ref] = f"{subsection} {v.name}"
+            words = v.group.rsplit(">", 1)[-1].strip().split()
+            qualifier = " ".join(words[-3:])
+            result[v.ref] = f"{qualifier} {v.name}"
     return result
