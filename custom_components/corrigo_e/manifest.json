@@ -1,0 +1,10 @@
+{
+  "domain": "corrigo_e",
+  "name": "Regin Corrigo E",
+  "version": "1.0.0",
+  "config_flow": true,
+  "documentation": "https://github.com/benjamin-larsson/EXOlink",
+  "requirements": [],
+  "codeowners": [],
+  "iot_class": "local_polling"
+}

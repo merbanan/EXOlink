@@ -1,0 +1,407 @@
+# Corrigo E Ventilation — Variable Database
+# Format: Name | ref | rw | unit | fmt | values | visible_if
+# rw: r=read-only, rw=read-write
+# unit: empty if "—"
+# fmt: integer decimal places, empty if "—"
+# values: 0=Label;1=Label for Index/Logic enums, empty if not applicable
+# visible_if: ref string like V,3,0x466,L, empty if unconditional
+
+[Manual/Auto > Ventilation Unit]
+Mode | V,2,0x321,X | rw | | | 0=Off;1=Reduced Speed;2=Normal Speed;3=Auto |
+Mode (actual) | V,3,0x1E9,X | r | | | 0=Stopped;1=Starting up;2=Starting up;3=Starting up;4=Starting up;5=Normal run;6=Support control heat;7=Support control cool;8=CO2 run;9=Night cooling;10=Fullspeed stop;11=Stopping fan;12=Fire mode;13=Recirculation run;14=Defrosting |
+
+[Manual/Auto > Supply Air Fan]
+Mode | V,2,0x322,X | rw | | | 0=Off;1=Reduced Speed;2=Normal Speed;3=Auto |
+Normal speed | V,3,0x1A7,L | r | | | 0=Off;1=On |
+Reduced speed | V,3,0x1A9,L | r | | | 0=Off;1=On |
+
+[Manual/Auto > Extract Air Fan]
+Mode | V,2,0x324,X | rw | | | 0=Off;1=Reduced Speed;2=Normal Speed;3=Auto |
+Normal speed | V,3,0x1A8,L | r | | | 0=Off;1=On |
+Reduced speed | V,3,0x1AA,L | r | | | 0=Off;1=On |
+
+[Manual/Auto > Exchanger Pump]
+Mode | V,2,0x32B,X | rw | | | 0=Off;1=On;2=Auto | V,3,0x466,L
+Pump | V,3,0x144,L | r | | | 0=Off;1=On | V,3,0x466,L
+
+[Manual/Auto > Heater Pump]
+Mode | V,2,0x32A,X | rw | | | 0=Off;1=On;2=Auto | V,3,0x465,L
+Pump | V,3,0x143,L | r | | | 0=Off;1=On | V,3,0x465,L
+
+[Manual/Auto > Cooler Pump]
+Mode | V,2,0x32C,X | rw | | | 0=Off;1=On;2=Auto | V,3,0x467,L
+Pump | V,3,0x145,L | r | | | 0=Off;1=On | V,3,0x467,L
+
+[Manual/Auto > Fire Damper]
+Mode | V,2,0x32D,X | rw | | | 0=Closed;1=Open;2=Auto | V,3,0x469,L
+Damper | V,3,0x1AE,L | r | | | 0=Closed;1=Open | V,3,0x469,L
+
+[Manual/Auto > Recycle Air Damper]
+Mode | V,2,0x32E,X | rw | | | 0=Closed;1=Open;2=Auto | V,3,0x47E,L
+Damper | V,3,0x1B7,L | r | | | 0=Closed;1=Open | V,3,0x47E,L
+
+[Manual/Auto > Fresh Air Damper]
+Mode | V,2,0x32F,X | rw | | | 0=Closed;1=Open;2=Auto | V,3,0x47F,L
+Damper | V,3,0x1B8,L | r | | | 0=Closed;1=Open | V,3,0x47F,L
+
+[Manual/Auto > Exhaust Air Damper]
+Mode | V,2,0x330,X | rw | | | 0=Closed;1=Open;2=Auto | V,3,0x480,L
+Damper | V,3,0x1B9,L | r | | | 0=Closed;1=Open | V,3,0x480,L
+
+[Manual/Auto > Humidity/Dehumidity]
+Mode | V,2,0x6E7,X | rw | | | 0=Off;1=On;2=Auto | V,3,0x468,L
+Output | V,3,0x1CC,L | r | | | 0=Off;1=On | V,3,0x468,L
+
+[Manual/Auto > Pretreatment]
+Mode | V,2,0xB10,X | rw | | | 0=Closed;1=Open;2=Auto |
+Output | V,3,0x1D2,L | r | | | 0=Off;1=On |
+
+[Manual/Auto > Y4 Extra Sequence]
+Mode | V,2,0xE52,X | rw | | | 0=Off;1=On;2=Auto | V,3,0x4A9,L
+Output | V,3,0x1D9,L | r | | | 0=Off;1=On | V,3,0x4A9,L
+
+[Manual/Auto > Y5 Extra Sequence]
+Mode | V,2,0xE53,X | rw | | | 0=Off;1=On;2=Auto | V,3,0x516,L
+Output | V,3,0x1DA,L | r | | | 0=Off;1=On | V,3,0x516,L
+
+[SetPointLeft > General]
+Ventilation mode | V,3,0x1E9,X | r | | | 0=Stopped;1=Starting up;2=Starting up;3=Starting up;4=Starting up;5=Normal run;6=Support control heat;7=Support control cool;8=CO2 run;9=Night cooling;10=Fullspeed stop;11=Stopping fan;12=Fire mode;13=Recirculation run;14=Defrosting |
+Outdoor temperature | V,3,0x084,R | r | °C | 1 | | V,3,0x4B7,L
+Intake air temp | V,3,0x0BD,R | r | °C | 1 | | V,3,0x50B,L
+Timechannel normal speed | V,43,0x00C,L | r | | | 0=Off;1=On |
+Timechannel reduced speed | V,43,0x00D,L | r | | | 0=Off;1=On |
+Extended operation normal speed | V,3,0x119,L | r | | | 0=Off;1=On |
+Extended operation reduced speed | V,3,0x11A,L | r | | | 0=Off;1=On |
+Extract temperature | V,3,0x08A,R | r | °C | 1 | | V,3,0x448,L
+Room temperature 1 | V,3,0x08D,R | r | °C | 1 | | V,3,0x458,L
+Room temperature 2 | V,3,0x090,R | r | °C | 1 | | V,3,0x45A,L
+Exhaust temperature | V,3,0x093,R | r | °C | 1 | | V,3,0x45B,L
+Extra sensor 1 | V,3,0x096,R | r | °C | 1 | | V,3,0x464,L
+Extra sensor 2 | V,3,0x0C0,R | r | °C | 1 | | V,3,0x505,L
+Extra sensor 3 | V,3,0x0C3,R | r | °C | 1 | | V,3,0x506,L
+Extra sensor 4 | V,3,0x0C6,R | r | °C | 1 | | V,3,0x507,L
+Extra sensor 5 | V,3,0x0C9,R | r | °C | 1 | | V,3,0x508,L
+Extra flow SAF | V,3,0x10B,R | r | m3/h | 1 | | V,3,0x509,L
+Extra flow EAF | V,3,0x10E,R | r | m3/h | 1 | | V,3,0x50A,L
+Heat exchanger efficiency | V,3,0x1E6,R | r | % | 1 | | V,3,0x499,L
+Supply Air Fan run time | V,3,0x1EA,R | r | h | |  |
+Extract Air Fan run time | V,3,0x1ED,R | r | h | |  |
+
+[SetPointLeft > Supply Air]
+Supply temperature | V,3,0x087,R | r | °C | 1 | |
+Supply setpoint | V,2,0x210,R | rw | °C | 1 | | V,3,0x446,L
+Supply setpoint | V,3,0x35A,R | r | °C | 1 | | V,3,0x496,L
+Active supply setpoint | V,2,0xE11,R | rw | °C | 1 | |
+Max supply setpoint | V,2,0x225,R | rw | °C | 1 | | V,3,0x50D,L
+Min supply setpoint | V,2,0x228,R | rw | °C | 1 | | V,3,0x50D,L
+Controller Output | V,3,0x387,R | r | % | | |
+Outdoortemp. X1, Supply Setpoint Y1 | V,2,0x630,R | rw | °C | 1 | | V,3,0x447,L
+Outdoortemp. X2, Supply Setpoint Y2 | V,2,0x633,R | rw | °C | 1 | | V,3,0x447,L
+Outdoortemp. X3, Supply Setpoint Y3 | V,2,0x636,R | rw | °C | 1 | | V,3,0x447,L
+Outdoortemp. X4, Supply Setpoint Y4 | V,2,0x639,R | rw | °C | 1 | | V,3,0x447,L
+Outdoortemp. X5, Supply Setpoint Y5 | V,2,0x63C,R | rw | °C | 1 | | V,3,0x447,L
+Outdoortemp. X6, Supply Setpoint Y6 | V,2,0x63F,R | rw | °C | 1 | | V,3,0x447,L
+Outdoortemp. X7, Supply Setpoint Y7 | V,2,0x642,R | rw | °C | 1 | | V,3,0x447,L
+Outdoortemp. X8, Supply Setpoint Y8 | V,2,0x645,R | rw | °C | 1 | | V,3,0x447,L
+
+[SetPointLeft > Extra control unit]
+Temperatur extra control unit | V,3,0x0AE,R | r | °C | 1 | | V,3,0x49B,L
+Setpoint | V,2,0x5F8,R | rw | °C | 1 | | V,3,0x49B,L
+Controller Output | V,3,0x3A2,R | r | % | 0 | | V,3,0x49B,L
+
+[SetPointRight > Extract Air]
+Extract temperature | V,3,0x08A,R | r | °C | 1 | | V,3,0x448,L
+Controller Output | V,3,0x38A,R | r | °C | 1 | | V,3,0x448,L
+Extract setpoint | V,2,0x213,R | rw | °C | 1 | | V,3,0x448,L
+
+[SetPointRight > Frequency controlled Supply Air Fan]
+Supply Air Fan pressure | V,3,0x099,R | r | Pa | | | V,3,0x44F,L
+Supply Air Fan air flow | V,3,0x102,R | r | m3/h | | | V,3,0x450,L
+Frequency (Vacon) | V,3,0x3B8,R | r | Hz | | | V,3,0x504,L
+Current (Vacon) | V,3,0x3C0,R | r | A | | | V,3,0x504,L
+Power (Vacon) | V,3,0x3C6,R | r | kW | | | V,3,0x504,L
+Frequency EAF (Vacon) | V,3,0x5E9,R | r | Hz | | | V,3,0x514,L
+Current EAF (Vacon) | V,3,0x5EF,R | r | A | | | V,3,0x514,L
+Power EAF (Vacon) | V,3,0x5F5,R | r | kW | | | V,3,0x514,L
+Controller Output | V,3,0x38D,R | r | % | | | V,3,0x44E,L
+Actual Setpoint Compensation | V,3,0x1FE,R | r | Pa | | | V,3,0x44F,L
+Actual Setpoint Compensation | V,3,0x1FE,R | r | m3/h | | | V,3,0x450,L
+Actual Setpoint Compensation | V,3,0x1FE,R | r | % | | | V,3,0x451,L
+Supply Air Fan normal speed setpoint | V,2,0x216,R | rw | Pa | | | V,3,0x44F,L
+Supply Air Fan reduced speed setpoint | V,2,0x219,R | rw | Pa | | | V,3,0x44F,L
+Supply Air Fan normal speed setpoint | V,2,0x24A,R | rw | m3/h | | | V,3,0x450,L
+Supply Air Fan reduced speed setpoint | V,2,0x24D,R | rw | m3/h | | | V,3,0x450,L
+Supply Air Fan output normal speed | V,2,0x235,R | rw | % | | | V,3,0x451,L
+Supply Air Fan output reduced speed | V,2,0x238,R | rw | % | | | V,3,0x451,L
+Min output setpoint | V,2,0xE2B,R | rw | | | | V,2,0x267,L
+
+[SetPointRight > Frequency controlled Extract Air Fan]
+Extract Air Fan pressure | V,3,0x09C,R | r | Pa | | | V,3,0x44F,L
+Extract Air Fan air flow | V,3,0x108,R | r | m3/h | | | V,3,0x450,L
+Max supply setpoint | V,3,0x105,R | r | m3/h | | | V,3,0x4C8,L
+Frequency (Vacon) | V,3,0x3FC,R | r | Hz | | | V,3,0x504,L
+Current (Vacon) | V,3,0x402,R | r | A | | | V,3,0x504,L
+Power (Vacon) | V,3,0x408,R | r | kW | | | V,3,0x504,L
+Frequency EAF (Vacon) | V,3,0x62B,R | r | Hz | | | V,3,0x514,L
+Current EAF (Vacon) | V,3,0x631,R | r | A | | | V,3,0x514,L
+Power EAF (Vacon) | V,3,0x637,R | r | kW | | | V,3,0x514,L
+Controller Output | V,3,0x390,R | r | % | | | V,3,0x44E,L
+Actual Setpoint Compensation | V,3,0x1FE,R | r | Pa | | | V,3,0x44F,L
+Actual Setpoint Compensation | V,3,0x1FE,R | r | m3/h | | | V,3,0x450,L
+Actual Setpoint Compensation | V,3,0x1FE,R | r | % | | | V,3,0x451,L
+Supply Air Fan normal speed setpoint | V,2,0x21C,R | rw | Pa | | | V,3,0x44F,L
+Supply Air Fan reduced speed setpoint | V,2,0x21F,R | rw | Pa | | | V,3,0x44F,L
+Supply Air Fan normal speed setpoint | V,2,0x250,R | rw | m3/h | | | V,3,0x450,L
+Supply Air Fan reduced speed setpoint | V,2,0x253,R | rw | m3/h | | | V,3,0x450,L
+Supply Air Fan output normal speed | V,2,0x23B,R | rw | % | | | V,3,0x451,L
+Supply Air Fan output reduced speed | V,2,0x23E,R | rw | % | | | V,3,0x451,L
+Min output setpoint | V,2,0xE2E,R | rw | | | | V,2,0x267,L
+
+[SetPointRight > Outdoor Comp. Curve Pressure/Flow Setpoint]
+Outdoor temperature for lower point | V,2,0x613,R | rw | °C | 1 | | V,3,0x452,L
+Outdoor temperature for lower point | V,2,0x613,R | rw | °C | 1 | | V,3,0x453,L
+Outdoor temperature for lower point | V,2,0x613,R | rw | °C | 1 | | V,3,0x451,L
+Pressere compensation at lower point | V,2,0x5AC,R | rw | Pa | | | V,3,0x452,L
+Pressere compensation at lower point | V,2,0x5AC,R | rw | m3/h | | | V,3,0x453,L
+Pressere compensation at lower point | V,2,0x5AC,R | rw | % | | | V,3,0x451,L
+Outdoor temperature for higher point | V,2,0x5B5,R | rw | °C | 1 | | V,3,0x452,L
+Outdoor temperature for higher point | V,2,0x5B5,R | rw | °C | 1 | | V,3,0x453,L
+Outdoor temperature for higher point | V,2,0x5B5,R | rw | % | | | V,3,0x451,L
+Pressure compensation at higer point | V,2,0x5B2,R | rw | Pa | | | V,3,0x452,L
+Pressure compensation at higer point | V,2,0x5B2,R | rw | m3/h | | | V,3,0x453,L
+Pressure compensation at higer point | V,2,0x5B2,R | rw | % | | | V,3,0x451,L
+Pressure/flow compensation only Supply Air Fan | V,2,0x5B8,L | rw | | | 0=Off;1=On | V,3,0x452,L
+Pressure/flow compensation only Supply Air Fan | V,2,0x5B8,L | rw | | | 0=Off;1=On | V,3,0x453,L
+Pressure/flow compensation only Supply Air Fan | V,2,0x5B8,L | rw | | | 0=Off;1=On | V,3,0x451,L
+
+[SetPointRight > Room]
+Room temperature | V,3,0x0FC,R | r | °C | 1 | | V,3,0x449,L
+Controller Output | V,3,0x399,R | r | % | | | V,3,0x449,L
+Room setpoint | V,2,0x30F,R | rw | °C | 1 | | V,3,0x449,L
+
+[SetPointRight > Support Control]
+Room temperature | V,3,0x0FC,R | r | °C | 1 | | V,3,0x44A,L
+Start heating at room temp | V,2,0x28A,R | rw | °C | 1 | | V,3,0x44A,L
+Stop heating at room temp | V,2,0x28D,R | rw | °C | 1 | | V,3,0x44A,L
+Start cooling at room temp | V,2,0x290,R | rw | °C | 1 | | V,3,0x44A,L
+Stop cooling at room temp | V,2,0x294,R | rw | °C | 1 | | V,3,0x44A,L
+
+[SetPointRight > CO2]
+CO2 sensor | V,3,0x0A5,R | r | ppm | | | V,3,0x460,L
+Controller Output | V,3,0x396,R | r | % | | | V,3,0x460,L
+CO2 setpoint | V,2,0x222,R | rw | ppm | | | V,3,0x460,L
+
+[SetPointRight > CO2 (speed control)]
+CO2 sensor | V,3,0x0A5,R | r | ppm | | | V,3,0x498,L
+Start reduced speed at CO2 level | V,2,0x280,R | rw | ppm | | | V,3,0x498,L
+Start normal speed at CO2 level | V,2,0x283,R | rw | ppm | | | V,3,0x498,L
+Stop at CO2 level difference | V,2,0x286,R | rw | ppm | | | V,3,0x498,L
+
+[SetPointRight > Frost Protection]
+Frost protection temperature | V,3,0x0A2,R | r | °C | 1 | | V,3,0x45F,L
+Controller Output | V,3,0x393,R | r | % | | | V,3,0x45F,L
+Setpoint when stopped | V,2,0x344,R | rw | °C | 1 | | V,3,0x45F,L
+P-band when running | V,2,0x348,R | rw | °C | 1 | | V,3,0x45F,L
+
+[SetPointRight > Deicing]
+Deicing temperature | V,3,0x09F,R | r | °C | 1 | | V,3,0x45E,L
+Controller Output | V,3,0x39C,R | r | % | | | V,3,0x45E,L
+Setpoint | V,2,0x2A3,R | rw | °C | 1 | | V,3,0x45E,L
+Hysteresis | V,2,0x2A6,R | rw | °C | 1 | | V,3,0x45E,L
+
+[SetPointRight > Humidity]
+Humidity room | V,3,0x0A8,R | r | % | | | V,3,0x461,L
+Controller Output | V,3,0x39F,R | r | % | | | V,3,0x468,L
+Humidity Duct | V,3,0x0AB,R | r | % | | | V,3,0x462,L
+Setpoint | V,2,0x2AE,R | rw | RH | | | V,3,0x468,L
+Max humidity in duct | V,2,0x2B1,R | rw | RH | | | V,3,0x462,L
+
+[SetPointRight > Recycling]
+Recirkulation setpoint | V,2,0x5FC,R | rw | °C | 1 | | V,3,0x49C,L
+Offset supply setpoint when recirculation | V,2,0xB2D,R | rw | °C | 0 | | V,3,0x49C,L
+Offset SAF | V,2,0x604,R | rw | | 0 | | V,3,0x49C,L
+
+[SetPointRight > Extra Comp. Curve Pressure/Flow Setpoint]
+Temperature sensor for pressure compensation | V,2,0xB2C,X | r | | | 0=-;1=-;2=Supplytemp;3=Extracttemp;4=Roomtemp1;5=Roomtemp2 | V,3,0x515,L
+Outdoor temperature for lower point | V,2,0xB1C,R | rw | °C | 0 | | V,3,0x515,L
+Outdoor temperature for middle point | V,2,0xB22,R | rw | °C | 0 | | V,3,0x515,L
+Outdoor temperature for higher point | V,2,0xB28,R | rw | °C | 0 | | V,3,0x515,L
+Pressere compensation at lower point | V,2,0xB19,R | rw | Pa | 0 | | V,3,0x44F,L
+Pressere compensation at middle point | V,2,0xB1F,R | rw | Pa | 0 | | V,3,0x44F,L
+Pressure compensation at higer point | V,2,0xB25,R | rw | Pa | 0 | | V,3,0x44F,L
+Pressere compensation at lower point | V,2,0xB19,R | rw | m3/h | 0 | | V,3,0x450,L
+Pressere compensation at middle point | V,2,0xB1F,R | rw | m3/h | 0 | | V,3,0x450,L
+Pressure compensation at higer point | V,2,0xB25,R | rw | m3/h | 0 | | V,3,0x450,L
+Pressere compensation at lower point | V,2,0xB19,R | rw | % | 0 | | V,3,0x451,L
+Pressere compensation at middle point | V,2,0xB1F,R | rw | % | 0 | | V,3,0x451,L
+Pressure compensation at higer point | V,2,0xB25,R | rw | % | 0 | | V,3,0x451,L
+Pressure/flow compensation only Supply Air Fan | V,2,0xB2B,L | r | | | 0=Off;1=On | V,3,0x44E,L
+
+[SetPointRight > Controller output comp. Pressure/Flow Setpoint]
+Controller output compensating | V,2,0xB53,X | rw | | | 0=Not active;1=Increase pressure/flow;2=Decrease pressure/flow | V,3,0x515,L
+Controller output for Comp.=0 at cooling demand | V,2,0xB54,R | rw | % | 0 | | V,3,0x515,L
+Controller output for Comp.=100 at cooling demand | V,2,0xB57,R | rw | % | 0 | | V,3,0x515,L
+Reference value at cooling demand | V,2,0xE25,R | rw | | 0 | | V,3,0x515,L
+Controller output for Comp.=0 at heating demand | V,2,0xB5A,R | rw | % | 0 | | V,3,0x515,L
+Controller output for Comp.=100 at heating demand | V,2,0xB5D,R | rw | % | 0 | | V,3,0x515,L
+Reference value at heating demand | V,2,0xE28,R | rw | | 0 | | V,3,0x515,L
+
+[SetPointRight > SFP (Specific Fan Power)]
+SFP | V,3,0x5D0,R | r | kW/m3/s | 2 | | V,3,0x50E,L
+SFP day average | V,3,0x5D3,R | r | kW/m3/s | 2 | | V,3,0x50E,L
+SFP month average | V,3,0x5D6,R | r | kW/m3/s | 2 | | V,3,0x50E,L
+Frequencer loss | V,2,0xC79,R | r | % | 0 | | V,3,0x50E,L
+
+[Input > Analog Inputs]
+AI1 | V,3,0x009,R | r | | 1 | |
+AI2 | V,3,0x00C,R | r | | 1 | |
+AI3 | V,3,0x00F,R | r | | 1 | | V,3,0x49A,L
+AI4 | V,3,0x012,R | r | | 1 | | V,3,0x49A,L
+UAI1 | V,3,0x015,R | r | | 1 | | V,3,0x46C,L
+UAI2 | V,3,0x018,R | r | | 1 | | V,3,0x46C,L
+UAI3 | V,3,0x01B,R | r | | 1 | | V,3,0x46C,L
+UAI4 | V,3,0x01E,R | r | | 1 | | V,3,0x46C,L
+Exp1AI1 | V,3,0x021,R | r | | 1 | | V,3,0x4FE,L
+Exp1AI2 | V,3,0x024,R | r | | 1 | | V,3,0x4FE,L
+Exp1AI3 | V,3,0x027,R | r | | 1 | | V,3,0x4FF,L
+Exp1AI4 | V,3,0x02A,R | r | | 1 | | V,3,0x4FF,L
+Exp1UAI1 | V,3,0x02D,R | r | | 1 | | V,3,0x500,L
+Exp1UAI2 | V,3,0x030,R | r | | 1 | | V,3,0x500,L
+Exp1UAI3 | V,3,0x033,R | r | | 1 | | V,3,0x500,L
+Exp1UAI4 | V,3,0x036,R | r | | 1 | | V,3,0x500,L
+Exp2AI1 | V,3,0x039,R | r | | 1 | | V,3,0x501,L
+Exp2AI2 | V,3,0x03C,R | r | | 1 | | V,3,0x501,L
+Exp2AI3 | V,3,0x03F,R | r | | 1 | | V,3,0x502,L
+Exp2AI4 | V,3,0x042,R | r | | 1 | | V,3,0x502,L
+Exp2UAI1 | V,3,0x045,R | r | | 1 | | V,3,0x503,L
+Exp2UAI2 | V,3,0x048,R | r | | 1 | | V,3,0x503,L
+Exp2UAI3 | V,3,0x04B,R | r | | 1 | | V,3,0x503,L
+Exp2UAI4 | V,3,0x04E,R | r | | 1 | | V,3,0x503,L
+Exp3UAI1 | V,3,0x069,R | r | | 1 | | V,3,0x56C,L
+Exp3UAI2 | V,3,0x06C,R | r | | 1 | | V,3,0x56C,L
+Exp3DIA | V,3,0x06F,R | r | | 1 | | V,3,0x56C,L
+Exp3DIB | V,3,0x072,R | r | | 1 | | V,3,0x56B,L
+Exp4UAI1 | V,3,0x075,R | r | | 1 | | V,3,0x56E,L
+Exp4UAI2 | V,3,0x078,R | r | | 1 | | V,3,0x56E,L
+Exp4DIA | V,3,0x07B,R | r | | 1 | | V,3,0x56E,L
+Exp4DIB | V,3,0x07E,R | r | | 1 | | V,3,0x56D,L
+Exp5UAI1 | V,3,0x708,R | r | | 1 | | V,3,0x570,L
+Exp5UAI2 | V,3,0x70B,R | r | | 1 | | V,3,0x570,L
+Exp5DIA | V,3,0x70E,R | r | | 1 | | V,3,0x570,L
+Exp5DIB | V,3,0x711,R | r | | 1 | | V,3,0x56F,L
+Exp6UAI1 | V,3,0x714,R | r | | 1 | | V,3,0x572,L
+Exp6UAI2 | V,3,0x717,R | r | | 1 | | V,3,0x572,L
+Exp6DIA | V,3,0x71A,R | r | | 1 | | V,3,0x572,L
+Exp6DIB | V,3,0x71D,R | r | | 1 | | V,3,0x571,L
+
+[Input > Digital Inputs]
+DI1 | V,59,0x003,L | r | | | 0=Off;1=On |
+DI2 | V,59,0x004,L | r | | | 0=Off;1=On |
+DI3 | V,59,0x005,L | r | | | 0=Off;1=On |
+DI4 | V,59,0x006,L | r | | | 0=Off;1=On | V,3,0x49A,L
+DI5 | V,59,0x007,L | r | | | 0=Off;1=On | V,3,0x46C,L
+DI6 | V,59,0x008,L | r | | | 0=Off;1=On | V,3,0x46C,L
+DI7 | V,59,0x009,L | r | | | 0=Off;1=On | V,3,0x46C,L
+DI8 | V,59,0x00A,L | r | | | 0=Off;1=On | V,3,0x46C,L
+UDI1 | V,59,0x00B,L | r | | | 0=Off;1=On | V,3,0x46C,L
+UDI2 | V,59,0x00C,L | r | | | 0=Off;1=On | V,3,0x46C,L
+UDI3 | V,59,0x00D,L | r | | | 0=Off;1=On | V,3,0x46C,L
+UDI4 | V,59,0x00E,L | r | | | 0=Off;1=On | V,3,0x46C,L
+Exp1DI1 | V,59,0x00F,L | r | | | 0=Off;1=On | V,3,0x4FE,L
+Exp1DI2 | V,59,0x010,L | r | | | 0=Off;1=On | V,3,0x4FE,L
+Exp1DI3 | V,59,0x011,L | r | | | 0=Off;1=On | V,3,0x4FE,L
+Exp1DI4 | V,59,0x012,L | r | | | 0=Off;1=On | V,3,0x4FF,L
+Exp1DI5 | V,59,0x013,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp1DI6 | V,59,0x014,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp1DI7 | V,59,0x015,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp1DI8 | V,59,0x016,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp1UDI1 | V,59,0x017,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp1UDI2 | V,59,0x018,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp1UDI3 | V,59,0x019,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp1UDI4 | V,59,0x01A,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp2DI1 | V,59,0x01B,L | r | | | 0=Off;1=On | V,3,0x501,L
+Exp2DI2 | V,59,0x01C,L | r | | | 0=Off;1=On | V,3,0x501,L
+Exp2DI3 | V,59,0x01D,L | r | | | 0=Off;1=On | V,3,0x501,L
+Exp2DI4 | V,59,0x01E,L | r | | | 0=Off;1=On | V,3,0x502,L
+Exp2DI5 | V,59,0x01F,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp2DI6 | V,59,0x020,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp2DI7 | V,59,0x021,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp2DI8 | V,59,0x022,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp2UDI1 | V,59,0x023,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp2UDI2 | V,59,0x024,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp2UDI3 | V,59,0x025,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp2UDI4 | V,59,0x026,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp3UDI1 | V,3,0x6D2,L | r | | | 0=Off;1=On | V,3,0x56C,L
+Exp3UDI2 | V,3,0x6D3,L | r | | | 0=Off;1=On | V,3,0x56C,L
+Exp4UDI1 | V,3,0x6D4,L | r | | | 0=Off;1=On | V,3,0x56E,L
+Exp4UDI2 | V,3,0x6D5,L | r | | | 0=Off;1=On | V,3,0x56E,L
+Exp5UDI1 | V,3,0x7B3,L | r | | | 0=Off;1=On | V,3,0x570,L
+Exp5UDI2 | V,3,0x7B4,L | r | | | 0=Off;1=On | V,3,0x570,L
+Exp6UDI1 | V,3,0x7B5,L | r | | | 0=Off;1=On | V,3,0x572,L
+Exp6UDI2 | V,3,0x7B6,L | r | | | 0=Off;1=On | V,3,0x572,L
+
+[Output > Analog Outputs]
+AO1 | V,59,0x80D,R | r | | 1 | |
+AO2 | V,59,0x810,R | r | | 1 | | V,3,0x49A,L
+AO3 | V,59,0x813,R | r | | 1 | | V,3,0x49A,L
+AO4 | V,59,0x816,R | r | | 1 | | V,3,0x46C,L
+AO5 | V,59,0x819,R | r | | 1 | | V,3,0x46C,L
+Exp1AO1 | V,59,0x81C,R | r | | 1 | | V,3,0x4FE,L
+Exp1AO2 | V,59,0x81F,R | r | | 1 | | V,3,0x4FF,L
+Exp1AO3 | V,59,0x822,R | r | | 1 | | V,3,0x4FF,L
+Exp1AO4 | V,59,0x825,R | r | | 1 | | V,3,0x500,L
+Exp1AO5 | V,59,0x828,R | r | | 1 | | V,3,0x500,L
+Exp2AO1 | V,59,0x82B,R | r | | 1 | | V,3,0x501,L
+Exp2AO2 | V,59,0x82E,R | r | | 1 | | V,3,0x502,L
+Exp2AO3 | V,59,0x831,R | r | | 1 | | V,3,0x502,L
+Exp2AO4 | V,59,0x834,R | r | | 1 | | V,3,0x503,L
+Exp2AO5 | V,59,0x837,R | r | | 1 | | V,3,0x503,L
+
+[Output > Digital Outputs]
+DO1 | V,59,0x437,L | r | | | 0=Off;1=On |
+DO2 | V,59,0x438,L | r | | | 0=Off;1=On |
+DO3 | V,59,0x439,L | r | | | 0=Off;1=On | V,3,0x49A,L
+DO4 | V,59,0x43A,L | r | | | 0=Off;1=On | V,3,0x49A,L
+DO5 | V,59,0x43B,L | r | | | 0=Off;1=On | V,3,0x46C,L
+DO6 | V,59,0x43C,L | r | | | 0=Off;1=On | V,3,0x46C,L
+DO7 | V,59,0x43D,L | r | | | 0=Off;1=On | V,3,0x46C,L
+Exp1DO1 | V,59,0x43E,L | r | | | 0=Off;1=On | V,3,0x4FE,L
+Exp1DO2 | V,59,0x43F,L | r | | | 0=Off;1=On | V,3,0x4FE,L
+Exp1DO3 | V,59,0x440,L | r | | | 0=Off;1=On | V,3,0x4FF,L
+Exp1DO4 | V,59,0x441,L | r | | | 0=Off;1=On | V,3,0x4FF,L
+Exp1DO5 | V,59,0x442,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp1DO6 | V,59,0x443,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp1DO7 | V,59,0x444,L | r | | | 0=Off;1=On | V,3,0x500,L
+Exp2DO1 | V,59,0x445,L | r | | | 0=Off;1=On | V,3,0x501,L
+Exp2DO2 | V,59,0x446,L | r | | | 0=Off;1=On | V,3,0x501,L
+Exp2DO3 | V,59,0x447,L | r | | | 0=Off;1=On | V,3,0x502,L
+Exp2DO4 | V,59,0x448,L | r | | | 0=Off;1=On | V,3,0x502,L
+Exp2DO5 | V,59,0x449,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp2DO6 | V,59,0x44A,L | r | | | 0=Off;1=On | V,3,0x503,L
+Exp2DO7 | V,59,0x44B,L | r | | | 0=Off;1=On | V,3,0x503,L
+
+[Settings > Controller Settings]
+P-band | V,2,0x65A,R | rw | °C | | |
+I-time | V,2,0x687,R | rw | s | | |
+P-band | V,2,0x65D,R | rw | °C | | | V,3,0x448,L
+I-time | V,2,0x68A,R | rw | s | | | V,3,0x448,L
+P-band pressure | V,2,0x660,R | rw | Pa | | | V,3,0x44F,L
+P-band flow | V,2,0x258,R | rw | m3/h | | | V,3,0x450,L
+I-time | V,2,0x68D,R | rw | s | | | V,3,0x44E,L
+Min utsignal | V,2,0x732,R | rw | % | | | V,3,0x44E,L
+P-band pressure | V,2,0x663,R | rw | Pa | | | V,3,0x44F,L
+P-band flow | V,2,0x25B,R | rw | m3/h | | | V,3,0x450,L
+I-time | V,2,0x690,R | rw | s | | | V,3,0x44E,L
+Min utsignal | V,2,0x735,R | rw | % | | | V,3,0x44E,L
+P-band | V,2,0x66C,R | rw | °C | | | V,3,0x449,L
+I-time | V,2,0x699,R | rw | s | | | V,3,0x449,L
+P-band | V,2,0x669,R | rw | ppm | | | V,3,0x497,L
+I-time | V,2,0x696,R | rw | s | | | V,3,0x497,L
+P-band | V,2,0x666,R | rw | °C | | | V,3,0x45F,L
+I-time | V,2,0x693,R | rw | s | | | V,3,0x45F,L
+P-band | V,2,0x66F,R | rw | °C | | | V,3,0x45E,L
+I-time | V,2,0x69C,R | rw | s | | | V,3,0x45E,L
+P-band | V,2,0x672,R | rw | % RH | | | V,3,0x468,L
+I-time | V,2,0x69F,R | rw | s | | | V,3,0x468,L
+P-band | V,2,0x675,R | rw | °C | | | V,3,0x49B,L
+I-time | V,2,0x6A2,R | rw | s | | | V,3,0x49B,L

@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Regin Corrigo E",
+        "data": {
+          "host": "Host (IP address or hostname)",
+          "port": "TCP port",
+          "ela": "End Layer Address (controller address)",
+          "scan_interval": "Scan interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the controller. Check the host and ELA.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This controller is already configured."
+    }
+  }
+}
