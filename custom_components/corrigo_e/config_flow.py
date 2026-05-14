@@ -1,17 +1,22 @@
 """Config flow for Regin Corrigo E."""
 from __future__ import annotations
 
+import logging
+
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT
 
 from .const import CONF_ELA, CONF_SCAN_INTERVAL, DEFAULT_ELA, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DOMAIN
-from .libexolink import EXOConnectionError, EXOlink
+from .libexolink import EXOConnectionError, EXOError, EXOlink
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _test_connection(host: str, port: int, ela: int) -> None:
+    # Read a variable that every Corrigo E has; also validates the ELA.
     with EXOlink(host, port=port, ela=ela) as ctrl:
-        ctrl.poll()
+        ctrl.read("V,3,0x1E9,X")
 
 
 class CorrigoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -30,9 +35,10 @@ class CorrigoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input[CONF_PORT],
                     user_input[CONF_ELA],
                 )
-            except EXOConnectionError:
+            except EXOError:
                 errors["base"] = "cannot_connect"
             except Exception:
+                _LOGGER.exception("Unexpected error connecting to %s", user_input[CONF_HOST])
                 errors["base"] = "unknown"
             else:
                 uid = f"{user_input[CONF_HOST]}:{user_input[CONF_PORT]}:{user_input[CONF_ELA]}"
