@@ -10,7 +10,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DEFAULT_ENABLED_REFS, DOMAIN
 from .coordinator import CorrigoCoordinator
-from .variable_db import VarRecord
+from .variable_db import VarRecord, compute_entity_names
 
 
 async def async_setup_entry(
@@ -19,11 +19,9 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     coordinator: CorrigoCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
-        CorrigoSwitch(coordinator, entry, var)
-        for var in coordinator._variables
-        if var.rw and var.datatype == "L"
-    )
+    vars = [v for v in coordinator._variables if v.rw and v.datatype == "L"]
+    names = compute_entity_names(vars)
+    async_add_entities(CorrigoSwitch(coordinator, entry, var, names[var.ref]) for var in vars)
 
 
 class CorrigoSwitch(CoordinatorEntity[CorrigoCoordinator], SwitchEntity):
@@ -35,12 +33,12 @@ class CorrigoSwitch(CoordinatorEntity[CorrigoCoordinator], SwitchEntity):
         coordinator: CorrigoCoordinator,
         entry: ConfigEntry,
         var: VarRecord,
+        name: str,
     ) -> None:
         super().__init__(coordinator)
         self._var = var
         self._attr_unique_id = f"{entry.entry_id}_{var.ref.replace(',', '_')}"
-        subsection = var.group.rsplit(">", 1)[-1].strip()
-        self._attr_name = f"{subsection} {var.name}"
+        self._attr_name = name
         self._attr_entity_registry_enabled_default = var.ref in DEFAULT_ENABLED_REFS
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},

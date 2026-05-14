@@ -83,3 +83,17 @@ def load_unique_variables(path: str = _VARS_PATH) -> list[VarRecord]:
             seen.add(var.ref)
             result.append(var)
     return result
+
+
+def compute_entity_names(variables: list[VarRecord]) -> dict[str, str]:
+    """Return ref → entity name, qualifying only names that collide within the list."""
+    from collections import Counter
+    name_count = Counter(v.name for v in variables)
+    result: dict[str, str] = {}
+    for v in variables:
+        if name_count[v.name] == 1:
+            result[v.ref] = v.name
+        else:
+            subsection = v.group.rsplit(">", 1)[-1].strip()
+            result[v.ref] = f"{subsection} {v.name}"
+    return result
