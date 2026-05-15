@@ -114,12 +114,16 @@ def parse_response(data: bytes) -> bytes:
     EXOChecksumError
         If the computed XOR of the payload does not match the received checksum.
     """
-    if len(data) < 3:
+    if len(data) < 2:
         raise EXOFrameError(f"Response too short: {data.hex()}")
     if data[0] != SOA:
         raise EXOFrameError(f"Expected SOA (0x3D), got 0x{data[0]:02X}")
     if data[-1] != EOM:
         raise EXOFrameError(f"Expected EOM (0x3E), got 0x{data[-1]:02X}")
+
+    # Bare SOA+EOM with no payload is a valid empty ACK (e.g. successful write).
+    if len(data) == 2:
+        return b""
 
     inner = unescape(data[1:-1])
 
