@@ -1,6 +1,8 @@
 """Number platform for Regin Corrigo E (writable R/I variables)."""
 from __future__ import annotations
 
+import math
+
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -109,14 +111,22 @@ class CorrigoNumber(CoordinatorEntity[CorrigoCoordinator], NumberEntity):
         value = self.coordinator.data.get(self._var.ref)
         if value is None:
             return None
+        if isinstance(value, float) and not math.isfinite(value):
+            return None
         if isinstance(value, float) and self._var.fmt is not None:
             return round(value, self._var.fmt)
         return float(value)
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.data is not None and \
-               self.coordinator.data.get(self._var.ref) is not None
+        if not super().available or self.coordinator.data is None:
+            return False
+        value = self.coordinator.data.get(self._var.ref)
+        if value is None:
+            return False
+        if isinstance(value, float) and not math.isfinite(value):
+            return False
+        return True
 
     async def async_set_native_value(self, value: float) -> None:
         typed = int(value) if self._var.datatype == "I" else value

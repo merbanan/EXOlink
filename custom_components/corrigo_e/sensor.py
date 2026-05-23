@@ -1,6 +1,8 @@
 """Sensor platform for Regin Corrigo E."""
 from __future__ import annotations
 
+import math
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -115,6 +117,8 @@ class CorrigoSensor(CoordinatorEntity[CorrigoCoordinator], SensorEntity):
         value = self.coordinator.data.get(self._var.ref)
         if value is None:
             return None
+        if isinstance(value, float) and not math.isfinite(value):
+            return None
         if self._var.datatype == "X" and self._var.values:
             return self._var.values.get(int(value), str(value))
         if isinstance(value, float) and self._var.fmt is not None:
@@ -123,5 +127,11 @@ class CorrigoSensor(CoordinatorEntity[CorrigoCoordinator], SensorEntity):
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.data is not None and \
-               self.coordinator.data.get(self._var.ref) is not None
+        if not super().available or self.coordinator.data is None:
+            return False
+        value = self.coordinator.data.get(self._var.ref)
+        if value is None:
+            return False
+        if isinstance(value, float) and not math.isfinite(value):
+            return False
+        return True
