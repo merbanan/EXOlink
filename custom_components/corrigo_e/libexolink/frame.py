@@ -11,7 +11,7 @@ Special bytes (0x1B, 0x3C, 0x3D, 0x3E) are escaped as:
   0x1B  (~byte & 0xFF)
 """
 
-from .exceptions import EXOChecksumError, EXOFrameError
+from .exceptions import EXOChecksumError, EXOFrameError, EXONakError
 
 SOM = 0x3C
 SOA = 0x3D
@@ -124,6 +124,13 @@ def parse_response(data: bytes) -> bytes:
     # Bare SOA+EOM with no payload is a valid empty ACK (e.g. successful write).
     if len(data) == 2:
         return b""
+
+    # Compact "variable unavailable" frame: SOA + error_byte + EOM (3 bytes, XOR
+    # omitted). The Corrigo E sends 0x29 for I/O points whose expansion module
+    # is not installed. A 1-byte payload is never a valid value response —
+    # even Logic 0 is sent as the full 4-byte SOA + 0x00 + XOR=0x00 + EOM.
+    if len(data) == 3:
+        raise EXONakError(f"Variable unavailable (code 0x{data[1]:02X})")
 
     inner = unescape(data[1:-1])
 
